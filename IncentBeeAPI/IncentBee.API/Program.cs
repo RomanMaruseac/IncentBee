@@ -1,13 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-using IncentBee;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Add DbContext
+// Register DbContext with PostgreSQL connection string
 builder.Services.AddDbContext<WeatherForecastDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -22,20 +19,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Test DB connection endpoint
-app.MapGet("/testdb", async (WeatherForecastDbContext db) =>
+// Sample data generation and API endpoint
+app.MapGet("/weatherforecast", async (WeatherForecastDbContext dbContext) =>
 {
-    try
-    {
-        var forecast = await db.WeatherForecasts.ToListAsync();
-        return forecast.Any() 
-            ? Results.Ok("Database connection is working. Data fetched.")
-            : Results.NotFound("Database connected, but no data found.");
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Error connecting to database: {ex.Message}");
-    }
-});
+    return await dbContext.WeatherForecasts.ToListAsync();
+})
+.WithName("GetWeatherForecast")
+.WithOpenApi();
 
 app.Run();
