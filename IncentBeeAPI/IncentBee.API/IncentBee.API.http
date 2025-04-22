@@ -1,0 +1,6 @@
+@IncentBee.API_HostAddress = http://localhost:5081
+
+GET {{IncentBee.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
