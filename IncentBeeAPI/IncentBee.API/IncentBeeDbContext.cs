@@ -51,11 +51,11 @@ namespace IncentBee.API
                 .WithMany(u => u.Completions)
                 .HasForeignKey(c => c.UserId);
                 
-            // Configure relationship between Task and Completions
-            modelBuilder.Entity<Completion>()
-                .HasOne(c => c.Task)
-                .WithMany(t => t.Completions)
-                .HasForeignKey(c => c.TaskId);
+            // Configure relationship between OfferTask and Completions
+modelBuilder.Entity<Completion>()
+    .HasOne(c => c.Task)
+    .WithMany(t => t.Completions)
+    .HasForeignKey(c => c.TaskId);
                 
             // Configure relationship between User and Redemptions
             modelBuilder.Entity<Redemption>()
