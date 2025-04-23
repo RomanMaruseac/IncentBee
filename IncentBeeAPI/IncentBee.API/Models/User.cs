@@ -7,6 +7,25 @@ namespace IncentBee.API.Models
 {
     public class User
     {
+        public User()
+        {
+            Username = string.Empty;
+            Email = string.Empty;
+            PasswordHash = string.Empty;
+            AccountStatus = "active";
+            ExternalId = string.Empty;
+            ProfileImageUrl = string.Empty;
+            Country = string.Empty;
+            IpAddress = string.Empty;
+            DeviceInfo = string.Empty;
+            
+            Referrals = new List<User>();
+            Completions = new List<Completion>();
+            Redemptions = new List<Redemption>();
+            ReferralsCreated = new List<Referral>();
+            Notifications = new List<Notification>();
+        }
+        
         [Key]
         public int UserId { get; set; }
         
@@ -33,7 +52,7 @@ namespace IncentBee.API.Models
         public string ExternalId { get; set; }
         
         [Required, StringLength(20)]
-        public string AccountStatus { get; set; } = "active";
+        public string AccountStatus { get; set; }
         
         [StringLength(255)]
         public string ProfileImageUrl { get; set; }
@@ -48,7 +67,7 @@ namespace IncentBee.API.Models
         
         // Navigation properties
         [ForeignKey("ReferrerId")]
-        public User Referrer { get; set; }
+        public User? Referrer { get; set; }
         
         public ICollection<User> Referrals { get; set; }
         public ICollection<Completion> Completions { get; set; }

@@ -29,9 +29,6 @@ namespace IncentBee.API
                 app.UseSwaggerUI();
             }
             
-            // Serve static files from wwwroot
-            app.UseStaticFiles();
-            
             // Database connection check
             using (var scope = app.Services.CreateScope())
             {

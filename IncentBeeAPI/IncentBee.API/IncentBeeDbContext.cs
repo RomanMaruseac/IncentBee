@@ -12,8 +12,6 @@ namespace IncentBee.API
 
         public DbSet<User> Users { get; set; }
         public DbSet<OfferTask> Tasks { get; set; }
-
-
         public DbSet<Completion> Completions { get; set; }
         public DbSet<Reward> Rewards { get; set; }
         public DbSet<Redemption> Redemptions { get; set; }
@@ -33,6 +31,61 @@ namespace IncentBee.API
                 .WithMany(u => u.Referrals)
                 .HasForeignKey(u => u.ReferrerId)
                 .OnDelete(DeleteBehavior.SetNull);
+                
+            // Configure Referral relationships
+            modelBuilder.Entity<Referral>()
+                .HasOne(r => r.Referrer)
+                .WithMany(u => u.ReferralsCreated)
+                .HasForeignKey(r => r.ReferrerId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            modelBuilder.Entity<Referral>()
+                .HasOne(r => r.Referred)
+                .WithOne()
+                .HasForeignKey<Referral>(r => r.ReferredId)
+                .OnDelete(DeleteBehavior.Restrict);
+                
+            // Configure relationship between User and Completions
+            modelBuilder.Entity<Completion>()
+                .HasOne(c => c.User)
+                .WithMany(u => u.Completions)
+                .HasForeignKey(c => c.UserId);
+                
+            // Configure relationship between Task and Completions
+            modelBuilder.Entity<Completion>()
+                .HasOne(c => c.Task)
+                .WithMany(t => t.Completions)
+                .HasForeignKey(c => c.TaskId);
+                
+            // Configure relationship between User and Redemptions
+            modelBuilder.Entity<Redemption>()
+                .HasOne(r => r.User)
+                .WithMany(u => u.Redemptions)
+                .HasForeignKey(r => r.UserId);
+                
+            // Configure relationship between Reward and Redemptions
+            modelBuilder.Entity<Redemption>()
+                .HasOne(r => r.Reward)
+                .WithMany(rw => rw.Redemptions)
+                .HasForeignKey(r => r.RewardId);
+                
+            // Configure relationship between User and Notifications
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(n => n.UserId);
+                
+            // Configure relationship between Referral and ReferralCommissions
+            modelBuilder.Entity<ReferralCommission>()
+                .HasOne(rc => rc.Referral)
+                .WithMany(r => r.Commissions)
+                .HasForeignKey(rc => rc.ReferralId);
+
+            // Configure relationship between Completion and ReferralCommissions                
+            modelBuilder.Entity<ReferralCommission>()
+                .HasOne(rc => rc.Completion)
+                .WithMany(c => c.ReferralCommissions)
+                .HasForeignKey(rc => rc.CompletionId);
                 
             // Unique constraints
             modelBuilder.Entity<User>()
