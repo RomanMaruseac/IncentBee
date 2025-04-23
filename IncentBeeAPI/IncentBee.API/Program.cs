@@ -55,7 +55,7 @@ namespace IncentBee.API
             app.MapGet("/callbacks", async context =>
             {
                 context.Response.ContentType = "text/html";
-                await context.Response.SendFileAsync("wwwroot/CallbacksViewer.html");
+                await context.Response.SendFileAsync("/var/www/incentbee/CallbacksViewer.html");
             });
             
             app.Run();
