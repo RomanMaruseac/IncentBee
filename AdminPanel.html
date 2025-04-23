@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IncentBee Admin</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: #343a40;
+            color: #fff;
+            padding-top: 20px;
+        }
+        
+        .sidebar h1 {
+            padding: 0 20px;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar ul li {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        
+        .sidebar ul li:hover, .sidebar ul li.active {
+            background-color: #495057;
+        }
+        
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .card {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            margin-top: 0;
+            color: #6c757d;
+            font-weight: normal;
+            font-size: 1rem;
+        }
+        
+        .stat-card p {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0 0;
+            color: #343a40;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        table th, table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .pagination button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+        }
+        
+        .pagination button.active {
+            background-color: #007bff;
+            color: #fff;
+            border-color: #007bff;
+        }
+        
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .user-detail {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .user-detail div {
+            width: 50%;
+            margin-bottom: 10px;
+        }
+        
+        .user-detail strong {
+            display: block;
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .back-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        
+        .loader {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100px;
+        }
+        
+        .loader::after {
+            content: "";
+            width: 30px;
+            height: 30px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>IncentBee Admin</h1>
+            <ul>
+                <li data-page="dashboard" class="active">Dashboard</li>
+                <li data-page="users">Users</li>
+                <li data-page="completions">Completions</li>
+                <li data-page="rewards">Rewards</li>
+                <li data-page="redemptions">Redemptions</li>
+            </ul>
+        </div>
+        
+        <div class="content" id="main-content">
+            <!-- Content will be loaded here -->
+            <div class="loader"></div>
+        </div>
+    </div>
+
+    <script>
+        // Current page state
+        let currentPage = 'dashboard';
+        let currentData = {};
+        let paginationInfo = {
+            users: { page: 1, pageSize: 20, totalPages: 1 },
+            completions: { page: 1, pageSize: 20, totalPages: 1 },
+            redemptions: { page: 1, pageSize: 20, totalPages: 1 }
+        };
+        
+        // API base URL
+        const API_BASE_URL = '/api/admin';
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up navigation
+            document.querySelectorAll('.sidebar li').forEach(item => {
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
+                    item.classList.add('active');
+                    currentPage = item.dataset.page;
+                    loadContent(currentPage);
+                });
+            });
+            
+            // Load initial page
+            loadContent('dashboard');
+        });
+        
+        // Load content based on current page
+        function loadContent(page) {
+            const contentDiv = document.getElementById('main-content');
+            contentDiv.innerHTML = '<div class="loader"></div>';
+            
+            switch(page) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'users':
+                    loadUsers(paginationInfo.users.page);
+                    break;
+                case 'completions':
+                    loadCompletions(paginationInfo.completions.page);
+                    break;
+                case 'rewards':
+                    loadRewards();
+                    break;
+                case 'redemptions':
+                    loadRedemptions(paginationInfo.redemptions.page);
+                    break;
+                default:
+                    contentDiv.innerHTML = '<div class="card"><h2>Page not found</h2></div>';
+            }
+        }
+        
+        // API fetch helper
+        async function fetchApi(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/${endpoint}`);
+                if (!response.ok) throw new Error('API request failed');
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return null;
+            }
+        }
+        
+        // Load dashboard
+        async function loadDashboard() {
+            const stats = await fetchApi('stats');
+            if (!stats) {
+                document.getElementById('main-content').innerHTML = '<div class="card"><h2>Error loading dashboard</h2></div>';
+                return;
+            }
+            
+            const html = `
+                <h2>Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Users</h3>
+                        <p>${stats.userCount}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>New Users (24h)</h3>
+                        <p>${stats.lastDayUsers}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Completions</h3>
+                        <p>${stats.completionCount}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Completions (24h)</h3>
+                        <p>${stats.lastDayCompletions}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Active Points Balance</h3>
+                        <p>${stats.totalPoints.toLocaleString()}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Redeemed Points</h3>
+                        <p>${stats.redeemedPoints.toLocaleString()}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Pending Redemptions</h3>
+                        <p>${stats.pendingRedemptions}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Referrals</h3>
+                        <p>${stats.referralCount}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('main-content').innerHTML = html;
+        }
+        
+        // Load users
+        async function loadUsers(page = 1) {
+            const data = await fetchApi(`users?page=${page}&pageSize=${paginationInfo.users.pageSize}`);
+            if (!data) {
+                document.getElementById('main-content').innerHTML = '<div class="card"><h2>Error loading users</h2></div>';
+                return;
+            }
+            
+            currentData.users = data.users;
+            paginationInfo.users = {
+                page: data.page,
+                pageSize: data.pageSize,
+                totalPages: data.totalPages
+            };
+            
+            let html = `
+                <h2>Users (${data.totalCount})</h2>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Created</th>
+                                <th>Last Login</th>
+                                <th>Points</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.users.forEach(user => {
+                const created = new Date(user.createdAt).toLocaleString();
+                const lastLogin = user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never';
+                
+                html += `
+                    <tr>
+                        <td>${user.userId}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${created}</td>
+                        <td>${lastLogin}</td>
+                        <td>${user.pointsBalance}</td>
+                        <td>${user.accountStatus}</td>
+                        <td><button onclick="showUserDetails(${user.userId})">View</button></td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        <button ${page <= 1 ? 'disabled' : ''} onclick="loadUsers(${page - 1})">Previous</button>
+                        <span>${page} of ${data.totalPages}</span>
+                        <button ${page >= data.totalPages ? 'disabled' : ''} onclick="loadUsers(${page + 1})">Next</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('main-content').innerHTML = html;
+        }
+        
+        // Show user details
+        async function showUserDetails(userId) {
+            document.getElementById('main-content').innerHTML = '<div class="loader"></div>';
+            
+            const user = await fetchApi(`users/${userId}`);
+            if (!user) {
+                document.getElementById('main-content').innerHTML = '<div class="card"><h2>Error loading user details</h2></div>';
+                return;
+            }
+            
+            const completions = await fetchApi(`users/${userId}/completions`);
+            const referrals = await fetchApi(`users/${userId}/referrals`);
+            
+            let html = `
+                <button class="back-button" onclick="loadUsers(${paginationInfo.users.page})">Back to Users</button>
+                <h2>User Details: ${user.username}</h2>
+                
+                <div class="card">
+                    <div class="user-detail">
+                        <div>
+                            <strong>User ID</strong>
+                            ${user.userId}
+                        </div>
+                        <div>
+                            <strong>Username</strong>
+                            ${user.username}
+                        </div>
+                        <div>
+                            <strong>Email</strong>
+                            ${user.email}
+                        </div>
+                        <div>
+                            <strong>Created</strong>
+                            ${new Date(user.createdAt).toLocaleString()}
+                        </div>
+                        <div>
+                            <strong>Last Login</strong>
+                            ${user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}
+                        </div>
+                        <div>
+                            <strong>Points Balance</strong>
+                            ${user.pointsBalance}
+                        </div>
+                        <div>
+                            <strong>Account Status</strong>
+                            ${user.accountStatus}
+                        </div>
+                        <div>
+                            <strong>Country</strong>
+                            ${user.country || 'Unknown'}
+                        </div>
+                        <div>
+                            <strong>Referrer</strong>
+                            ${user.referrerName ? user.referrerName : 'None'}
+                        </div>
+                        <div>
+                            <strong>External ID</strong>
+                            ${user.externalId || 'None'}
+                        </div>
+                        <div>
+                            <strong>IP Address</strong>
+                            ${user.ipAddress || 'Unknown'}
+                        </div>
+                    </div>
+                </div>
+                
+                <h3>Completions</h3>
+                <div class="card">
+            `;
+            
+            if (completions && completions.completions && completions.completions.length > 0) {
+                html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Points</th>
+                                <th>USD</th>
+                                <th>Status</th>
+                                <th>Task</th>
+                                <th>Network</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                completions.completions.forEach(completion => {
+                    html += `
+                        <tr>
+                            <td>${new Date(completion.completedAt).toLocaleString()}</td>
+                            <td>${completion.pointsAwarded}</td>
+                            <td>${completion.usdValue || '0'}</td>
+                            <td>${completion.status}</td>
+                            <td>${completion.taskName || 'Unknown'}</td>
+                            <td>${completion.affiliateNetwork}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                `;
+                
+                if (completions.totalPages > 1) {
+                    html += `
+                        <div class="pagination">
+                            <button ${completions.page <= 1 ? 'disabled' : ''} 
+                                   onclick="showUserCompletions(${userId}, ${completions.page - 1})">Previous</button>
+                            <span>${completions.page} of ${completions.totalPages}</span>
+                            <button ${completions.page >= completions.totalPages ? 'disabled' : ''} 
+                                   onclick="showUserCompletions(${userId}, ${completions.page + 1})">Next</button>
+                        </div>
+                    `;
+                }
+            } else {
+                html += '<p>No completions found.</p>';
+            }
+            
+            html += `
+                </div>
+                
+                <h3>Referrals</h3>
+                <div class="card">
+            `;
+            
+            if (referrals && referrals.length > 0) {
+                html += `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Joined</th>
+                                <th>Points Balance</th>
+                                <th>Earnings Generated</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                referrals.forEach(referral => {
+                    html += `
+                        <tr>
+                            <td>${referral.username}</td>
+                            <td>${referral.email}</td>
+                            <td>${new Date(referral.createdAt).toLocaleString()}</td>
+                            <td>${referral.pointsBalance}</td>
+                            <td>${referral.earningsGenerated}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                `;
+            } else {
+                html += '<p>No referrals found.</p>';
+            }
+            
+            html += `</div>`;
+            
+            document.getElementById('main-content').innerHTML = html;
+        }
+        
+        // Show user completions with pagination
+        async function showUserCompletions(userId, page = 1) {
+            const completions = await fetchApi(`users/${userId}/completions?page=${page}`);
+            if (!completions) return;
+            
+            const completionsTable = document.querySelector('.card table tbody');
+            completionsTable.innerHTML = '';
+            
+            completions.completions.forEach(completion => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(completion.completedAt).toLocaleString()}</td>
+                    <td>${completion.pointsAwarded}</td>
+                    <td>${completion.usdValue || '0'}</td>
+                    <td>${completion.status}</td>
+                    <td>${completion.taskName || 'Unknown'}</td>
+                    <td>${completion.affiliateNetwork}</td>
+                `;
+                completionsTable.appendChild(row);
+            });
+            
+            const pagination = document.querySelector('.card .pagination');
+            pagination.innerHTML = `
+                <button ${completions.page <= 1 ? 'disabled' : ''} 
+                       onclick="showUserCompletions(${userId}, ${completions.page - 1})">Previous</button>
+                <span>${completions.page} of ${completions.totalPages}</span>
+                <button ${completions.page >= completions.totalPages ? 'disabled' : ''} 
+                       onclick="showUserCompletions(${userId}, ${completions.page + 1})">Next</button>
+            `;
+        }
+        
+        // Load completions
+        async function loadCompletions(page = 1) {
+            const data = await fetchApi(`completions?page=${page}&pageSize=${paginationInfo.completions.pageSize}`);
+            if (!data) {
+                document.getElementById('main-content').innerHTML = '<div class="card"><h2>Error loading completions</h2></div>';
+                return;
+            }
+            
+            currentData.completions = data.completions;
+            paginationInfo.completions = {
+                page: data.page,
+                pageSize: data.pageSize,
+                totalPages: data.totalPages
+            };
+            
+            let html = `
+                <h2>Completions (${data.totalCount})</h2>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>User</th>
+                                <th>Points</th>
+                                <th>USD</th>
+                                <th>Status</th>
+                                <th>Network</th>
+                                <th>Task</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.completions.forEach(completion => {
+                const completed = new Date(completion.completedAt).toLocaleString();
+                
+                html += `
+                    <tr>
+                        <td>${completion.completionId}</td>
+                        <td>${completed}</td>
+                        <td>${completion.userName} (${completion.userId})</td>
+                        <td>${completion.pointsAwarded}</td>
+                        <td>${completion.usdValue || '0'}</td>
+                        <td>${completion.status}</td>
+                        <td>${completion.affiliateNetwork}</td>
+                        <td>${completion.taskName || 'Unknown'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        <button ${page <= 1 ? 'disabled' : ''} onclick="loadCompletions(${page - 1})">Previous</button>
+                        <span>${page} of ${data.totalPages}</span>
+                        <button ${page >= data.totalPages ? 'disabled' : ''} onclick="loadCompletions(${page + 1})">Next</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('main-content').innerHTML = html;
+        }
+        
+        // Load rewards
+        async function loadRewards() {
+            const data = await fetchApi('rewards');
+            if (!data) {
+                document.getElementById('main-content').innerHTML = '<div class="card"><h2>Error loading rewards</h2></div>';
+                return;
+            }
+            
+            currentData.rewards = data;
+            
+            let html = `
+                <h2>Rewards (${data.length})</h2>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Points Cost</th>
+                                <th>Stock</th>
+                                <th>Status</th>
+                                <th>Featured</th>
+                                <th>Redemptions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.forEach(reward => {
+                html += `
+                    <tr>
+                        <td>${reward.rewardId}</td>
+                        <td>${reward.title}</td>
+                        <td>${reward.category || 'None'}</td>
+                        <td>${reward.pointsCost}</td>
+                        <td>${reward.stockQuantity !== null ? reward.stockQuantity : 'Unlimited'}</td>
+                        <td>${reward.status}</td>
+                        <td>${reward.featured ? 'Yes' : 'No'}</td>
+                        <td>${reward.redemptionCount}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('main-content').innerHTML = html;
+        }
+        
+        // Load redemptions
+        async function loadRedemptions(page = 1) {
+            const data = await fetchApi(`redemptions?page=${page}&pageSize=${paginationInfo.redemptions.pageSize}`);
+            if (!data) {
+                document.getElementById('main-content').innerHTML = '<div class="card"><h2>Error loading redemptions</h2></div>';
+                return;
+            }
+            
+            currentData.redemptions = data.redemptions;
+            paginationInfo.redemptions = {
+                page: data.page,
+                pageSize: data.pageSize,
+                totalPages: data.totalPages
+            };
+            
+            let html = `
+                <h2>Redemptions (${data.totalCount})</h2>
+                <div class="card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>User</th>
+                                <th>Reward</th>
+                                <th>Points</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            data.redemptions.forEach(redemption => {
+                const date = new Date(redemption.redemptionDate).toLocaleString();
+                
+                html += `
+                    <tr>
+                        <td>${redemption.redemptionId}</td>
+                        <td>${date}</td>
+                        <td>${redemption.userName} (${redemption.userId})</td>
+                        <td>${redemption.rewardTitle}</td>
+                        <td>${redemption.pointsSpent}</td>
+                        <td>${redemption.status}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                    
+                    <div class="pagination">
+                        <button ${page <= 1 ? 'disabled' : ''} onclick="loadRedemptions(${page - 1})">Previous</button>
+                        <span>${page} of ${data.totalPages}</span>
+                        <button ${page >= data.totalPages ? 'disabled' : ''} onclick="loadRedemptions(${page + 1})">Next</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('main-content').innerHTML = html;
+        }
+    </script>
+</body>
+</html>

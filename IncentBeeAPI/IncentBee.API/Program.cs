@@ -55,6 +55,12 @@ namespace IncentBee.API
                 context.Response.ContentType = "text/html";
                 await context.Response.SendFileAsync("/var/www/incentbee/CallbacksViewer.html");
             });
+            // Add a route to the admin panel HTML
+            app.MapGet("/admin", async context =>
+            {
+                context.Response.ContentType = "text/html";
+                await context.Response.SendFileAsync("/var/www/incentbee/AdminPanel.html");
+            });
             
             app.Run();
         }
