@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using IncentBee.API;
-using Microsoft.OpenApi.Models;
 
 namespace IncentBee.API
 {
@@ -18,22 +17,10 @@ namespace IncentBee.API
             
             // Add Swagger
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "IncentBee API", Version = "v1" });
-            });
+            builder.Services.AddSwaggerGen();
             
-            // Add CORS
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("AllowAll", 
-                    builder => builder.AllowAnyOrigin()
-                                      .AllowAnyMethod()
-                                      .AllowAnyHeader());
-            });
-
             var app = builder.Build();
-            
+
             // Configure middleware
             if (app.Environment.IsDevelopment())
             {
@@ -41,26 +28,36 @@ namespace IncentBee.API
                 app.UseSwaggerUI();
             }
             
-            app.UseCors("AllowAll");
+            // Serve static files from wwwroot
+            app.UseStaticFiles();
             
-            // Apply migrations and ensure database created
+            // Database connection check
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<WeatherForecastDbContext>();
                 try
                 {
-                    dbContext.Database.EnsureCreated(); // Create database if it doesn't exist
-                    Console.WriteLine("Database created/verified successfully.");
+                    dbContext.Database.CanConnect();
+                    Console.WriteLine("Database connection successful.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Database initialization failed: {ex.Message}");
+                    Console.WriteLine($"Database connection failed: {ex.Message}");
                 }
             }
 
-            app.UseHttpsRedirection();
+            app.UseRouting();
             app.UseAuthorization();
+            
             app.MapControllers();
+            
+            // Add a route to the callbacks viewer HTML
+            app.MapGet("/callbacks", async context =>
+            {
+                context.Response.ContentType = "text/html";
+                await context.Response.SendFileAsync("wwwroot/CallbacksViewer.html");
+            });
+            
             app.Run();
         }
     }
