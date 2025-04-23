@@ -11,7 +11,9 @@ namespace IncentBee.API
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Task> Tasks { get; set; }
+        public DbSet<OfferTask> Tasks { get; set; }
+
+
         public DbSet<Completion> Completions { get; set; }
         public DbSet<Reward> Rewards { get; set; }
         public DbSet<Redemption> Redemptions { get; set; }

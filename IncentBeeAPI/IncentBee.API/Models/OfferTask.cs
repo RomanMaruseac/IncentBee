@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IncentBee.API.Models
 {
-    public class Task
+    public class OfferTask
     {
         [Key]
         public int TaskId { get; set; }
