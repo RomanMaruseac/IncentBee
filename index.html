@@ -19,6 +19,8 @@
             text-align: center;
         }
         .container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 20px;
         }
         h1 {
@@ -37,9 +39,91 @@
             color: #fff;
             text-align: center;
             padding: 10px;
-            position: absolute;
-            bottom: 0;
+            margin-top: 50px;
             width: 100%;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 15px;
+            background-color: #f2f2f2;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .task-item:hover {
+            background-color: #f9f9f9;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .hidden {
+            display: none;
+        }
+        .user-info {
+            background-color: #e9f7fe;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -51,14 +135,146 @@
     </header>
 
     <div class="container">
-        <div class="card">
-            <h2>How it Works</h2>
-            <p>Sign up, complete tasks, and earn points that you can redeem for gift cards and rewards!</p>
+        <div id="message" class="message hidden"></div>
+        
+        <!-- Guest Section -->
+        <div id="guest-section">
+            <div class="tabs">
+                <div class="tab active" data-tab="login">Login</div>
+                <div class="tab" data-tab="register">Register</div>
+            </div>
+            
+            <div id="login" class="tab-content active">
+                <div class="card">
+                    <h2>Login to Your Account</h2>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" required>
+                        </div>
+                        <button type="submit">Login</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="register" class="tab-content">
+                <div class="card">
+                    <h2>Create New Account</h2>
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label for="register-username">Username</label>
+                            <input type="text" id="register-username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input type="password" id="register-password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-referrer">Referrer Code (Optional)</label>
+                            <input type="text" id="register-referrer">
+                        </div>
+                        <button type="submit">Register</button>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <div class="card">
-            <h2>Refer a Friend</h2>
-            <p>Invite your friends to join and earn 10% of their earnings!</p>
+        
+        <!-- User Dashboard (Hidden by default) -->
+        <div id="user-dashboard" class="hidden">
+            <div class="user-info">
+                <h2>Welcome, <span id="user-name">User</span>!</h2>
+                <p>Your Points: <strong id="user-points">0</strong></p>
+                <p>Your Referral Link: <span id="referral-link">https://incentbee.com/?ref=YOUR_ID</span></p>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="available-tasks">Available Tasks</div>
+                <div class="tab" data-tab="completed-tasks">Completed Tasks</div>
+                <div class="tab" data-tab="rewards">Rewards</div>
+                <div class="tab" data-tab="referrals">Your Referrals</div>
+            </div>
+            
+            <div id="available-tasks" class="tab-content active">
+                <div class="card">
+                    <h2>Available Tasks</h2>
+                    <div id="tasks-list">
+                        <div class="task-item">
+                            <div>
+                                <h3>BitLabs Survey</h3>
+                                <p>Complete a short survey and earn points</p>
+                            </div>
+                            <div>
+                                <p>100 Points</p>
+                                <button class="task-btn" data-task="1">Start Task</button>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div>
+                                <h3>Download App</h3>
+                                <p>Install and run this app for 2 minutes</p>
+                            </div>
+                            <div>
+                                <p>150 Points</p>
+                                <button class="task-btn" data-task="2">Start Task</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="completed-tasks" class="tab-content">
+                <div class="card">
+                    <h2>Your Completed Tasks</h2>
+                    <div id="completed-tasks-list">
+                        <p>You haven't completed any tasks yet.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="rewards" class="tab-content">
+                <div class="card">
+                    <h2>Available Rewards</h2>
+                    <div id="rewards-list">
+                        <div class="task-item">
+                            <div>
+                                <h3>$5 Amazon Gift Card</h3>
+                                <p>Redeem for a $5 Amazon Gift Card</p>
+                            </div>
+                            <div>
+                                <p>500 Points</p>
+                                <button class="reward-btn" data-reward="1">Redeem</button>
+                            </div>
+                        </div>
+                        <div class="task-item">
+                            <div>
+                                <h3>$10 PayPal Credit</h3>
+                                <p>Get $10 transferred to your PayPal account</p>
+                            </div>
+                            <div>
+                                <p>1000 Points</p>
+                                <button class="reward-btn" data-reward="2">Redeem</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="referrals" class="tab-content">
+                <div class="card">
+                    <h2>Your Referrals</h2>
+                    <div id="referrals-list">
+                        <p>You haven't referred anyone yet.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -66,5 +282,140 @@
         <p>&copy; 2025 IncentBee. All rights reserved.</p>
     </footer>
 
+    <script>
+        // Toggle between tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab).classList.add('active');
+            });
+        });
+        
+        // For demo purposes - simulating login/register
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // In a real app, you would call your API here
+            fetch('/api/users/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Login failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // In a real app, store token and user info
+                // For demo, just show the dashboard
+                simulateSuccessfulLogin(email);
+            })
+            .catch(error => {
+                // For demo purposes, show success anyway
+                simulateSuccessfulLogin(email);
+                
+                // In a real app, you would show an error
+                /*
+                showMessage('Invalid email or password. Please try again.', 'error');
+                */
+            });
+        });
+        
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const referrer = document.getElementById('register-referrer').value;
+            
+            // In a real app, you would call your API here
+            fetch('/api/users/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, email, password, referrer })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Registration failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // In a real app, store token and user info
+                // For demo, just show the dashboard
+                simulateSuccessfulLogin(username);
+            })
+            .catch(error => {
+                // For demo purposes, show success anyway
+                simulateSuccessfulLogin(username);
+                
+                // In a real app, you would show an error
+                /*
+                showMessage('Registration failed. Please try again.', 'error');
+                */
+            });
+        });
+        
+        // Simulate task completion for demo
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('task-btn')) {
+                const taskId = e.target.dataset.task;
+                showMessage('Task started! Complete it to earn points.', 'success');
+                
+                // In a real app, this would redirect to the task
+                setTimeout(() => {
+                    showMessage('Task completed! You earned points.', 'success');
+                    const points = document.getElementById('user-points');
+                    points.textContent = parseInt(points.textContent) + (taskId === '1' ? 100 : 150);
+                }, 3000);
+            }
+            
+            if (e.target.classList.contains('reward-btn')) {
+                const rewardId = e.target.dataset.reward;
+                const rewardCost = rewardId === '1' ? 500 : 1000;
+                const currentPoints = parseInt(document.getElementById('user-points').textContent);
+                
+                if (currentPoints >= rewardCost) {
+                    document.getElementById('user-points').textContent = currentPoints - rewardCost;
+                    showMessage('Reward redeemed successfully!', 'success');
+                } else {
+                    showMessage('Not enough points to redeem this reward.', 'error');
+                }
+            }
+        });
+        
+        // Helper functions
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.classList.remove('hidden');
+            
+            setTimeout(() => {
+                message.classList.add('hidden');
+            }, 5000);
+        }
+        
+        function simulateSuccessfulLogin(name) {
+            document.getElementById('guest-section').classList.add('hidden');
+            document.getElementById('user-dashboard').classList.remove('hidden');
+            document.getElementById('user-name').textContent = name.split('@')[0];
+            document.getElementById('referral-link').textContent = `https://incentbee.com/?ref=${name.split('@')[0].toUpperCase()}`;
+            showMessage('Login successful!', 'success');
+        }
+    </script>
 </body>
 </html>
