@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using IncentBee.API;
+using IncentBee.API.Models;
 
 namespace IncentBee.API
 {
@@ -10,7 +11,7 @@ namespace IncentBee.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Register services
-            builder.Services.AddDbContext<WeatherForecastDbContext>(options =>
+            builder.Services.AddDbContext<IncentBeeDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddControllers();
@@ -34,7 +35,7 @@ namespace IncentBee.API
             // Database connection check
             using (var scope = app.Services.CreateScope())
             {
-                var dbContext = scope.ServiceProvider.GetRequiredService<WeatherForecastDbContext>();
+                var dbContext = scope.ServiceProvider.GetRequiredService<IncentBeeDbContext>();
                 try
                 {
                     dbContext.Database.CanConnect();
