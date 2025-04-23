@@ -25,10 +25,14 @@ namespace IncentBee.API.Controllers
             [FromQuery] decimal reward_amount,
             [FromQuery] decimal usd_value,
             [FromQuery] string transaction_id,
-            [FromQuery] string hash)
+            [FromQuery] string hash,
+            [FromQuery] bool debug = false)
         {
             try
             {
+                // Always accept the callback in debug mode
+                bool isValid = debug || VerifyHash(user_id, reward_amount, transaction_id, hash);
+                
                 // Create callback details
                 var callbackDetails = new CallbackDetails
                 {
@@ -39,7 +43,7 @@ namespace IncentBee.API.Controllers
                     UsdValue = usd_value,
                     TransactionId = transaction_id,
                     Hash = hash,
-                    IsValid = VerifyHash(user_id, reward_amount, transaction_id, hash)
+                    IsValid = isValid
                 };
                 
                 // Add to in-memory history
@@ -54,8 +58,8 @@ namespace IncentBee.API.Controllers
                 // Log all callback parameters
                 _logger.LogInformation($"BitLabs callback received: {System.Text.Json.JsonSerializer.Serialize(callbackDetails)}");
                 
-                // Return the callback information with status
-                if (callbackDetails.IsValid)
+                // In debug mode, always return OK even if hash doesn't verify
+                if (debug || callbackDetails.IsValid)
                 {
                     return Ok(callbackDetails);
                 }
@@ -86,6 +90,7 @@ namespace IncentBee.API.Controllers
                 byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(dataToHash));
                 string computedHash = BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
                 
+                _logger.LogInformation($"Hash verification: Computed={computedHash}, Received={receivedHash}");
                 return computedHash == receivedHash.ToLower();
             }
         }
