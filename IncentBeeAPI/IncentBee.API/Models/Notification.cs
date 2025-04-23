@@ -6,6 +6,14 @@ namespace IncentBee.API.Models
 {
     public class Notification
     {
+        public Notification()
+        {
+            Title = string.Empty;
+            Message = string.Empty;
+            Type = string.Empty;
+            LinkUrl = string.Empty;
+        }
+        
         [Key]
         public int NotificationId { get; set; }
         
@@ -31,6 +39,6 @@ namespace IncentBee.API.Models
         
         // Navigation properties
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public User? User { get; set; }
     }
 }

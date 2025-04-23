@@ -6,6 +6,14 @@ namespace IncentBee.API.Models
 {
     public class Redemption
     {
+        public Redemption()
+        {
+            Status = "pending";
+            FulfillmentDetails = string.Empty;
+            RejectionReason = string.Empty;
+            AdminNotes = string.Empty;
+        }
+        
         [Key]
         public int RedemptionId { get; set; }
         
@@ -22,7 +30,7 @@ namespace IncentBee.API.Models
         public decimal PointsSpent { get; set; }
         
         [Required, StringLength(20)]
-        public string Status { get; set; } = "pending";
+        public string Status { get; set; }
         
         public string FulfillmentDetails { get; set; }
         
@@ -32,9 +40,9 @@ namespace IncentBee.API.Models
         
         // Navigation properties
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public User? User { get; set; }
         
         [ForeignKey("RewardId")]
-        public Reward Reward { get; set; }
+        public Reward? Reward { get; set; }
     }
 }

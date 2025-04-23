@@ -7,6 +7,18 @@ namespace IncentBee.API.Models
 {
     public class OfferTask
     {
+        public OfferTask()
+        {
+            Title = string.Empty;
+            Description = string.Empty;
+            AffiliateNetwork = string.Empty;
+            ExternalOfferId = string.Empty;
+            OfferType = string.Empty;
+            Status = "active";
+            Requirements = string.Empty;
+            Completions = new List<Completion>();
+        }
+        
         [Key]
         public int TaskId { get; set; }
         
@@ -31,7 +43,7 @@ namespace IncentBee.API.Models
         public string OfferType { get; set; }
         
         [Required, StringLength(20)]
-        public string Status { get; set; } = "active";
+        public string Status { get; set; }
         
         public string Requirements { get; set; }
         

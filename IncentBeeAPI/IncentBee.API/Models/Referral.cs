@@ -7,6 +7,12 @@ namespace IncentBee.API.Models
 {
     public class Referral
     {
+        public Referral()
+        {
+            Status = "active";
+            Commissions = new List<ReferralCommission>();
+        }
+        
         [Key]
         public int ReferralId { get; set; }
         
@@ -20,14 +26,14 @@ namespace IncentBee.API.Models
         public DateTime CreatedAt { get; set; }
         
         [Required, StringLength(20)]
-        public string Status { get; set; } = "active";
+        public string Status { get; set; }
         
         // Navigation properties
         [ForeignKey("ReferrerId")]
-        public User Referrer { get; set; }
+        public User? Referrer { get; set; }
         
         [ForeignKey("ReferredId")]
-        public User Referred { get; set; }
+        public User? Referred { get; set; }
         
         public ICollection<ReferralCommission> Commissions { get; set; }
     }

@@ -6,6 +6,14 @@ namespace IncentBee.API.Models
 {
     public class Setting
     {
+        public Setting()
+        {
+            SettingKey = string.Empty;
+            SettingValue = string.Empty;
+            Category = string.Empty;
+            Description = string.Empty;
+        }
+        
         [Key]
         public int SettingId { get; set; }
         
@@ -27,6 +35,6 @@ namespace IncentBee.API.Models
         
         // Navigation properties
         [ForeignKey("UpdatedBy")]
-        public User User { get; set; }
+        public User? User { get; set; }
     }
 }

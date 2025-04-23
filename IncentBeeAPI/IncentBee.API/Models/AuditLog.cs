@@ -6,6 +6,15 @@ namespace IncentBee.API.Models
 {
     public class AuditLog
     {
+        public AuditLog()
+        {
+            Action = string.Empty;
+            EntityType = string.Empty;
+            EntityId = string.Empty;
+            Details = string.Empty;
+            IpAddress = string.Empty;
+        }
+        
         [Key]
         public int LogId { get; set; }
         
@@ -30,6 +39,6 @@ namespace IncentBee.API.Models
         
         // Navigation properties
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public User? User { get; set; }
     }
 }

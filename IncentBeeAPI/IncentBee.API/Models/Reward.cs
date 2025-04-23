@@ -7,6 +7,16 @@ namespace IncentBee.API.Models
 {
     public class Reward
     {
+        public Reward()
+        {
+            Title = string.Empty;
+            Description = string.Empty;
+            ImageUrl = string.Empty;
+            Status = "available";
+            Category = string.Empty;
+            Redemptions = new List<Redemption>();
+        }
+        
         [Key]
         public int RewardId { get; set; }
         
@@ -24,7 +34,7 @@ namespace IncentBee.API.Models
         public int? StockQuantity { get; set; }
         
         [Required, StringLength(20)]
-        public string Status { get; set; } = "available";
+        public string Status { get; set; }
         
         [Required]
         public DateTime CreatedAt { get; set; }
@@ -36,7 +46,7 @@ namespace IncentBee.API.Models
         public string Category { get; set; }
         
         [Required]
-        public bool Featured { get; set; } = false;
+        public bool Featured { get; set; }
         
         // Navigation properties
         public ICollection<Redemption> Redemptions { get; set; }

@@ -7,6 +7,16 @@ namespace IncentBee.API.Models
 {
     public class Completion
     {
+        public Completion()
+        {
+            Status = "pending";
+            TransactionId = string.Empty;
+            AffiliateNetwork = string.Empty;
+            CompletionDetails = string.Empty;
+            IpAddress = string.Empty;
+            ReferralCommissions = new List<ReferralCommission>();
+        }
+        
         [Key]
         public int CompletionId { get; set; }
         
@@ -25,7 +35,7 @@ namespace IncentBee.API.Models
         public decimal? UsdValue { get; set; }
         
         [Required, StringLength(20)]
-        public string Status { get; set; } = "pending";
+        public string Status { get; set; }
         
         [StringLength(100)]
         public string TransactionId { get; set; }
@@ -40,10 +50,10 @@ namespace IncentBee.API.Models
         
         // Navigation properties
         [ForeignKey("UserId")]
-        public User User { get; set; }
+        public User? User { get; set; }
         
         [ForeignKey("TaskId")]
-        public Task Task { get; set; }
+        public OfferTask? Task { get; set; }
         
         public ICollection<ReferralCommission> ReferralCommissions { get; set; }
     }

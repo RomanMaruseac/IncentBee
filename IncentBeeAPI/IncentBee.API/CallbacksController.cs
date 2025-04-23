@@ -98,6 +98,14 @@ namespace IncentBee.API.Controllers
     
     public class CallbackDetails
     {
+        public CallbackDetails()
+        {
+            Network = string.Empty;
+            UserId = string.Empty;
+            TransactionId = string.Empty;
+            Hash = string.Empty;
+        }
+        
         public DateTime Timestamp { get; set; }
         public string Network { get; set; }
         public string UserId { get; set; }

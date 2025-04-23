@@ -6,6 +6,11 @@ namespace IncentBee.API.Models
 {
     public class ReferralCommission
     {
+        public ReferralCommission()
+        {
+            Status = "paid";
+        }
+        
         [Key]
         public int CommissionId { get; set; }
         
@@ -22,13 +27,13 @@ namespace IncentBee.API.Models
         public DateTime CreatedAt { get; set; }
         
         [Required, StringLength(20)]
-        public string Status { get; set; } = "paid";
+        public string Status { get; set; }
         
         // Navigation properties
         [ForeignKey("ReferralId")]
-        public Referral Referral { get; set; }
+        public Referral? Referral { get; set; }
         
         [ForeignKey("CompletionId")]
-        public Completion Completion { get; set; }
+        public Completion? Completion { get; set; }
     }
 }
